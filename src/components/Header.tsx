@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+import { Bars3Icon, XMarkIcon, UserIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
+import { useAuth } from '../contexts/AuthContext';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const location = useLocation();
+  const { user, openSignInModal, signOut } = useAuth();
 
   const navigation = [
     { name: 'Domains', href: '/domains' },
@@ -77,9 +80,56 @@ const Header = () => {
             >
               List Domain
             </Link>
-            <button className="btn-primary text-sm px-6 hover-glow">
-              Sign In
-            </button>
+            {user ? (
+              <div className="relative">
+                <button
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  className="flex items-center space-x-2 text-sm font-medium text-gray-700 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-lg px-3 py-2"
+                >
+                  <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
+                    <UserIcon className="w-5 h-5 text-primary-600" />
+                  </div>
+                  <span>{user.name}</span>
+                  <ChevronDownIcon className="w-4 h-4" />
+                </button>
+                {isUserMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
+                    <Link
+                      to="/seller-dashboard"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    >
+                      Dashboard
+                    </Link>
+                    {user.role === 'admin' && (
+                      <Link
+                        to="/admin"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => setIsUserMenuOpen(false)}
+                      >
+                        Admin Panel
+                      </Link>
+                    )}
+                    <button
+                      onClick={() => {
+                        signOut();
+                        setIsUserMenuOpen(false);
+                      }}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      Sign out
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <button 
+                onClick={openSignInModal}
+                className="btn-primary text-sm px-6 hover-glow"
+              >
+                Sign In
+              </button>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -138,9 +188,49 @@ const Header = () => {
                 >
                   List Domain
                 </Link>
-                <button className="btn-primary hover-glow animate-slide-up" style={{ animationDelay: '250ms' }}>
-                  Sign In
-                </button>
+                {user ? (
+                  <div className="space-y-2">
+                    <Link
+                      to="/seller-dashboard"
+                      className="btn-ghost text-center animate-slide-up"
+                      style={{ animationDelay: '200ms' }}
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Dashboard
+                    </Link>
+                    {user.role === 'admin' && (
+                      <Link
+                        to="/admin"
+                        className="btn-ghost text-center animate-slide-up"
+                        style={{ animationDelay: '225ms' }}
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        Admin Panel
+                      </Link>
+                    )}
+                    <button
+                      onClick={() => {
+                        signOut();
+                        setIsMenuOpen(false);
+                      }}
+                      className="btn-ghost text-center animate-slide-up w-full"
+                      style={{ animationDelay: '250ms' }}
+                    >
+                      Sign out
+                    </button>
+                  </div>
+                ) : (
+                  <button 
+                    onClick={() => {
+                      openSignInModal();
+                      setIsMenuOpen(false);
+                    }}
+                    className="btn-primary hover-glow animate-slide-up" 
+                    style={{ animationDelay: '250ms' }}
+                  >
+                    Sign In
+                  </button>
+                )}
               </div>
             </div>
           </div>

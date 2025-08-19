@@ -43,7 +43,7 @@ const SellerDashboard = () => {
     totalSales: 0,
     totalRevenue: 0
   });
-  const [activeTab, setActiveTab] = useState<'overview' | 'listings' | 'analytics' | 'settings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'listings' | 'analytics' | 'settings'>('listings');
 
   useEffect(() => {
     // Mock data - replace with API calls
@@ -137,6 +137,63 @@ const SellerDashboard = () => {
       currency: 'USD',
       minimumFractionDigits: 0
     }).format(amount);
+  };
+
+  const handleDeleteListing = (listingId: string) => {
+    console.log('Delete button clicked for listing ID:', listingId);
+    try {
+      if (window.confirm('Are you sure you want to delete this listing? This action cannot be undone.')) {
+        const updatedListings = listings.filter(listing => listing.id !== listingId);
+        setListings(updatedListings);
+        
+        // Update stats
+        setStats(prevStats => ({
+          ...prevStats,
+          totalListings: updatedListings.length,
+          activeListings: updatedListings.filter(l => l.status === 'active').length
+        }));
+        
+        console.log('Listing deleted successfully');
+        alert('Listing deleted successfully!');
+      }
+    } catch (error) {
+      console.error('Error deleting listing:', error);
+      alert('Error deleting listing. Please try again.');
+    }
+  };
+
+  const handleViewListing = (listingId: string) => {
+    console.log('View button clicked for listing ID:', listingId);
+    try {
+      const listing = listings.find(l => l.id === listingId);
+      if (listing) {
+        // For now, show an alert with listing details
+        // In a real app, this would navigate to a detailed view page
+        alert(`Viewing listing: ${listing.title}\nType: ${listing.type}\nPrice: ${formatCurrency(listing.price)}\nStatus: ${listing.status}`);
+      } else {
+        alert('Listing not found!');
+      }
+    } catch (error) {
+      console.error('Error viewing listing:', error);
+      alert('Error viewing listing. Please try again.');
+    }
+  };
+
+  const handleEditListing = (listingId: string) => {
+    console.log('Edit button clicked for listing ID:', listingId);
+    try {
+      const listing = listings.find(l => l.id === listingId);
+      if (listing) {
+        // For now, show an alert
+        // In a real app, this would navigate to an edit form
+        alert(`Edit functionality for "${listing.title}" will be implemented in the next update.`);
+      } else {
+        alert('Listing not found!');
+      }
+    } catch (error) {
+      console.error('Error editing listing:', error);
+      alert('Error editing listing. Please try again.');
+    }
   };
 
   return (
@@ -357,13 +414,25 @@ const SellerDashboard = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <div className="flex items-center justify-end space-x-2">
-                            <button className="text-gray-400 hover:text-gray-600">
+                            <button 
+                              onClick={() => handleViewListing(listing.id)}
+                              className="text-gray-400 hover:text-gray-600"
+                              title="View Details"
+                            >
                               <EyeIcon className="h-4 w-4" />
                             </button>
-                            <button className="text-gray-400 hover:text-gray-600">
+                            <button 
+                              onClick={() => handleEditListing(listing.id)}
+                              className="text-gray-400 hover:text-gray-600"
+                              title="Edit Listing"
+                            >
                               <PencilIcon className="h-4 w-4" />
                             </button>
-                            <button className="text-gray-400 hover:text-red-600">
+                            <button 
+                              onClick={() => handleDeleteListing(listing.id)}
+                              className="text-gray-400 hover:text-red-600"
+                              title="Delete Listing"
+                            >
                               <TrashIcon className="h-4 w-4" />
                             </button>
                           </div>

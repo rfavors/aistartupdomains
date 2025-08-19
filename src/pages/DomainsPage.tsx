@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FunnelIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { getDomains, getCategories, type Domain, type Category, type DomainFilters } from '../services/api';
 
 interface Domain {
   id: string;
@@ -18,143 +19,95 @@ interface Domain {
 const DomainsPage = () => {
   const [domains, setDomains] = useState<Domain[]>([]);
   const [filteredDomains, setFilteredDomains] = useState<Domain[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [priceRange, setPriceRange] = useState('all');
   const [sortBy, setSortBy] = useState('featured');
   const [showFilters, setShowFilters] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  // Mock data - replace with API call
+  // Fetch domains and categories on component mount
   useEffect(() => {
-    const mockDomains: Domain[] = [
-      {
-        id: '1',
-        name: 'AIStartupHub.com',
-        price: 12500,
-        category: 'AI & SaaS',
-        description: 'Perfect domain for an AI startup incubator or community platform',
-        traffic: '2.5K monthly',
-        age: '3 years',
-        featured: true,
-        seller: 'DomainPro'
-      },
-      {
-        id: '2',
-        name: 'SmartFintech.io',
-        price: 8900,
-        category: 'Fintech',
-        description: 'Ideal for financial technology companies and apps',
-        traffic: '1.8K monthly',
-        age: '2 years',
-        featured: true,
-        seller: 'TechDomains'
-      },
-      {
-        id: '3',
-        name: 'HealthAI.com',
-        price: 15000,
-        category: 'Health & AI',
-        description: 'Premium domain for healthcare AI solutions',
-        traffic: '3.2K monthly',
-        age: '4 years',
-        featured: false,
-        seller: 'MedTech'
-      },
-      {
-        id: '4',
-        name: 'CryptoVault.ai',
-        price: 6500,
-        category: 'Crypto',
-        description: 'Perfect for cryptocurrency and blockchain projects',
-        traffic: '1.2K monthly',
-        age: '1 year',
-        featured: false,
-        seller: 'BlockchainPro'
-      },
-      {
-        id: '5',
-        name: 'EduTechPro.com',
-        price: 4200,
-        category: 'EdTech',
-        description: 'Great for educational technology platforms',
-        traffic: '900 monthly',
-        age: '2 years',
-        featured: false,
-        seller: 'EduDomains'
-      },
-      {
-        id: '6',
-        name: 'GreenTechAI.io',
-        price: 9800,
-        category: 'GreenTech',
-        description: 'Ideal for sustainable technology and AI solutions',
-        traffic: '2.1K monthly',
-        age: '3 years',
-        featured: true,
-        seller: 'EcoTech'
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Fetch categories
+        const categoriesData = await getCategories();
+        setCategories([{ id: 0, name: 'all' }, ...categoriesData]);
+        
+        // Fetch domains with current filters
+        const filters: DomainFilters = {
+          category: selectedCategory !== 'all' ? selectedCategory : undefined,
+          search: searchTerm || undefined,
+          status: 'available'
+        };
+        
+        // Add price range filter
+        if (priceRange !== 'all') {
+          const [min, max] = getPriceRange(priceRange);
+          if (min !== undefined) filters.min_price = min;
+          if (max !== undefined) filters.max_price = max;
+        }
+        
+        const response = await getDomains(filters, { page: currentPage, limit: 12 });
+        setDomains(response.data);
+        setFilteredDomains(response.data);
+        
+        if (response.pagination) {
+          setTotalPages(response.pagination.total_pages);
+        }
+        
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch domains');
+        console.error('Error fetching domains:', err);
+      } finally {
+        setLoading(false);
       }
-    ];
-    setDomains(mockDomains);
-    setFilteredDomains(mockDomains);
-  }, []);
+    };
+    
+    fetchData();
+  }, [selectedCategory, searchTerm, priceRange, sortBy, currentPage]);
+  
+  // Helper function to convert price range string to min/max values
+  const getPriceRange = (range: string): [number | undefined, number | undefined] => {
+    switch (range) {
+      case 'under-5k': return [undefined, 5000];
+      case '5k-10k': return [5000, 10000];
+      case '10k-20k': return [10000, 20000];
+      case 'over-20k': return [20000, undefined];
+      default: return [undefined, undefined];
+    }
+  };
 
-  // Filter and search logic
+  // Local filtering and sorting (since API handles most filtering)
   useEffect(() => {
-    let filtered = domains;
+    let filtered = [...domains];
 
-    // Search filter
-    if (searchTerm) {
-      filtered = filtered.filter(domain => 
-        domain.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        domain.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        domain.category.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // Category filter
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(domain => domain.category === selectedCategory);
-    }
-
-    // Price range filter
-    if (priceRange !== 'all') {
-      switch (priceRange) {
-        case 'under-5k':
-          filtered = filtered.filter(domain => domain.price < 5000);
-          break;
-        case '5k-10k':
-          filtered = filtered.filter(domain => domain.price >= 5000 && domain.price < 10000);
-          break;
-        case '10k-20k':
-          filtered = filtered.filter(domain => domain.price >= 10000 && domain.price < 20000);
-          break;
-        case 'over-20k':
-          filtered = filtered.filter(domain => domain.price >= 20000);
-          break;
+    // Sort domains locally
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'price-low':
+          return a.price - b.price;
+        case 'price-high':
+          return b.price - a.price;
+        case 'name':
+          return a.name.localeCompare(b.name);
+        case 'featured':
+        default:
+          return (b.is_featured ? 1 : 0) - (a.is_featured ? 1 : 0);
       }
-    }
-
-    // Sort
-    switch (sortBy) {
-      case 'price-low':
-        filtered.sort((a, b) => a.price - b.price);
-        break;
-      case 'price-high':
-        filtered.sort((a, b) => b.price - a.price);
-        break;
-      case 'name':
-        filtered.sort((a, b) => a.name.localeCompare(b.name));
-        break;
-      case 'featured':
-      default:
-        filtered.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
-        break;
-    }
+    });
 
     setFilteredDomains(filtered);
-  }, [domains, searchTerm, selectedCategory, priceRange, sortBy]);
+  }, [domains, sortBy]);
 
-  const categories = ['all', 'AI & SaaS', 'Fintech', 'Health & AI', 'Crypto', 'EdTech', 'GreenTech'];
+
   const priceRanges = [
     { value: 'all', label: 'All Prices' },
     { value: 'under-5k', label: 'Under $5,000' },
@@ -238,10 +191,10 @@ const DomainsPage = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 >
                   {categories.map(category => (
-                    <option key={category} value={category}>
-                      {category === 'all' ? 'All Categories' : category}
-                    </option>
-                  ))}
+                  <option key={category.id} value={category.name}>
+                    {category.name === 'all' ? 'All Categories' : category.name}
+                  </option>
+                ))}
                 </select>
               </div>
               
@@ -282,74 +235,162 @@ const DomainsPage = () => {
           <div className="flex-1">
             <div className="mb-4 flex justify-between items-center">
               <p className="text-gray-600">
-                Showing {filteredDomains.length} of {domains.length} domains
+                {loading ? (
+                  'Loading domains...'
+                ) : error ? (
+                  <span className="text-red-600">Error: {error}</span>
+                ) : (
+                  `Showing ${filteredDomains.length} of ${domains.length} domains`
+                )}
               </p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {filteredDomains.map((domain) => (
-                <div key={domain.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-                  {domain.featured && (
-                    <div className="bg-gradient-to-r from-primary-500 to-blue-600 px-4 py-2">
-                      <span className="text-white text-sm font-medium">Featured</span>
-                    </div>
-                  )}
-                  
-                  <div className="p-6">
-                    <div className="flex items-start justify-between mb-3">
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        {domain.name}
-                      </h3>
-                      <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
-                        {domain.category}
-                      </span>
-                    </div>
-                    
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                      {domain.description}
-                    </p>
-                    
-                    {(domain.traffic || domain.age) && (
-                      <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
-                        {domain.traffic && (
-                          <div>
-                            <span className="text-gray-500">Traffic</span>
-                            <p className="font-medium text-gray-900">{domain.traffic}</p>
-                          </div>
-                        )}
-                        {domain.age && (
-                          <div>
-                            <span className="text-gray-500">Age</span>
-                            <p className="font-medium text-gray-900">{domain.age}</p>
-                          </div>
-                        )}
+            {loading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-pulse">
+                    <div className="h-4 bg-gray-200 rounded mb-4"></div>
+                    <div className="h-3 bg-gray-200 rounded mb-2"></div>
+                    <div className="h-3 bg-gray-200 rounded mb-4"></div>
+                    <div className="h-8 bg-gray-200 rounded"></div>
+                  </div>
+                ))}
+              </div>
+            ) : error ? (
+              <div className="text-center py-12">
+                <div className="text-red-600 mb-4">Failed to load domains</div>
+                <button 
+                  onClick={() => window.location.reload()}
+                  className="btn-primary"
+                >
+                  Try Again
+                </button>
+              </div>
+            ) : filteredDomains.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="text-gray-500 mb-4">No domains found matching your criteria</div>
+                <button 
+                  onClick={() => {
+                    setSearchTerm('');
+                    setSelectedCategory('all');
+                    setPriceRange('all');
+                  }}
+                  className="btn-primary"
+                >
+                  Clear Filters
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {filteredDomains.map((domain) => (
+                  <div key={domain.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+                    {domain.is_featured && (
+                      <div className="bg-gradient-to-r from-primary-500 to-blue-600 px-4 py-2">
+                        <span className="text-white text-sm font-medium">Featured</span>
                       </div>
                     )}
                     
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <span className="text-2xl font-bold text-primary-600">
-                          {formatPrice(domain.price)}
+                    <div className="p-6">
+                      <div className="flex items-start justify-between mb-3">
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          {domain.name}
+                        </h3>
+                        <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
+                          {domain.category}
                         </span>
-                        <p className="text-xs text-gray-500">by {domain.seller}</p>
                       </div>
                       
-                      <div className="flex gap-2">
-                        <button className="btn-secondary text-sm px-3 py-2">
-                          Make Offer
-                        </button>
-                        <Link
-                          to={`/domain/${domain.id}`}
-                          className="btn-primary text-sm px-3 py-2"
-                        >
-                          View Details
-                        </Link>
+                      <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                        {domain.description}
+                      </p>
+                      
+                      {(domain.traffic_stats || domain.domain_age) && (
+                        <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
+                          {domain.traffic_stats && (
+                            <div>
+                              <span className="text-gray-500">Traffic</span>
+                              <p className="font-medium text-gray-900">{domain.traffic_stats}</p>
+                            </div>
+                          )}
+                          {domain.domain_age && (
+                            <div>
+                              <span className="text-gray-500">Age</span>
+                              <p className="font-medium text-gray-900">{domain.domain_age}</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <span className="text-2xl font-bold text-primary-600">
+                            {formatPrice(domain.price)}
+                          </span>
+                          {domain.seller_name && (
+                            <p className="text-xs text-gray-500">by {domain.seller_name}</p>
+                          )}
+                        </div>
+                        
+                        <div className="flex gap-2">
+                          <button className="btn-secondary text-sm px-3 py-2">
+                            Make Offer
+                          </button>
+                          <Link
+                            to={`/domain/${domain.id}`}
+                            className="btn-primary text-sm px-3 py-2"
+                          >
+                            View Details
+                          </Link>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
+            
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center gap-2 mt-8">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                >
+                  Previous
+                </button>
+                
+                {[...Array(totalPages)].map((_, i) => {
+                  const page = i + 1;
+                  if (page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1)) {
+                    return (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`px-4 py-2 rounded-lg ${
+                          currentPage === page
+                            ? 'bg-primary-600 text-white'
+                            : 'border border-gray-300 hover:bg-gray-50'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    );
+                  } else if (page === currentPage - 2 || page === currentPage + 2) {
+                    return <span key={page} className="px-2">...</span>;
+                  }
+                  return null;
+                })}
+                
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                  className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                >
+                  Next
+                </button>
+              </div>
+            )}
             
             {filteredDomains.length === 0 && (
               <div className="text-center py-12">

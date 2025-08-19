@@ -2,28 +2,61 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { MagnifyingGlassIcon, SparklesIcon, TrophyIcon, ShieldCheckIcon, ArrowRightIcon, CheckIcon } from '@heroicons/react/24/outline';
 import { HeartIcon, StarIcon } from '@heroicons/react/24/solid';
+import { getFeaturedDomains, getMarketplaceStats, subscribeEmail, generateDomains, type Domain, type MarketplaceStats, type DomainGenerationRequest } from '../services/api';
 
 const HomePage = () => {
   const [email, setEmail] = useState('');
   const [businessIdea, setBusinessIdea] = useState('');
   const [generatedDomains, setGeneratedDomains] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [featuredDomains, setFeaturedDomains] = useState<Domain[]>([]);
+  const [marketplaceStats, setMarketplaceStats] = useState<MarketplaceStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [subscribing, setSubscribing] = useState(false);
 
-  const handleEmailSubmit = (e: React.FormEvent) => {
+  const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Integrate with ConvertKit/Mailchimp
-    console.log('Email submitted:', email);
-    alert('Thank you! You\'ll receive 10 brandable AI domains weekly.');
-    setEmail('');
+    if (!email) return;
+    
+    try {
+      setSubscribing(true);
+      await subscribeEmail({
+        email,
+        list_type: 'vip_waitlist',
+        source: 'homepage_hero'
+      });
+      
+      alert('🎉 Welcome to the VIP Waitlist! You\'ll get early access to hot domain drops.');
+      setEmail('');
+    } catch (err) {
+      console.error('Error subscribing email:', err);
+      alert('Failed to join waitlist. Please try again.');
+    } finally {
+      setSubscribing(false);
+    }
   };
 
-  const generateDomains = async () => {
-    if (!businessIdea.trim()) return;
-    
+  const generateDomainSuggestions = async () => {
+    if (!businessIdea.trim()) {
+      alert('Please enter your business idea first!');
+      return;
+    }
+
     setIsGenerating(true);
-    // TODO: Integrate with OpenAI API
-    // Simulated domain generation for now
-    setTimeout(() => {
+    
+    try {
+      const generationRequest: DomainGenerationRequest = {
+        businessIdea: businessIdea.trim(),
+        industry: 'Technology', // Default industry
+        style: 'Modern and professional'
+      };
+      
+      const response = await generateDomains(generationRequest);
+      setGeneratedDomains(response.domains);
+    } catch (error) {
+      console.error('Error generating domains:', error);
+      // Fallback to mock domains if API fails
       const mockDomains = [
         `${businessIdea.toLowerCase().replace(/\s+/g, '')}ai.com`,
         `smart${businessIdea.toLowerCase().replace(/\s+/g, '')}.io`,
@@ -32,20 +65,54 @@ const HomePage = () => {
         `${businessIdea.toLowerCase().replace(/\s+/g, '')}pro.ai`,
       ];
       setGeneratedDomains(mockDomains);
+      alert('Using fallback domain suggestions. AI generation temporarily unavailable.');
+    } finally {
       setIsGenerating(false);
-    }, 2000);
+    }
   };
 
-  const featuredDomain = {
+  // Fetch featured domains and marketplace stats
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const [domainsData, statsData] = await Promise.all([
+          getFeaturedDomains(),
+          getMarketplaceStats()
+        ]);
+        
+        setFeaturedDomains(domainsData);
+        setMarketplaceStats(statsData);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch data');
+        console.error('Error fetching homepage data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, []);
+
+  // Get the first featured domain for hero section
+  const featuredDomain = featuredDomains[0] || {
     name: 'AIStartupHub.com',
-    price: '$12,500',
+    price: 12500,
     category: 'AI & SaaS',
     description: 'Perfect domain for an AI startup incubator or community platform',
     traffic: '2.5K monthly visits',
     age: '3 years old'
   };
 
-  const stats = [
+  // Convert marketplace stats to display format
+  const stats = marketplaceStats ? [
+    { label: 'Domains Sold', value: `${marketplaceStats.total_sales}+` },
+    { label: 'Total Sales', value: `$${Math.round(marketplaceStats.total_sales * marketplaceStats.average_price / 1000000)}M` },
+    { label: 'Active Listings', value: `${marketplaceStats.active_listings}+` },
+    { label: 'Total Domains', value: `${marketplaceStats.total_domains}+` }
+  ] : [
     { label: 'Domains Sold', value: '2,847' },
     { label: 'Total Sales', value: '$4.2M' },
     { label: 'Active Listings', value: '15,623' },
@@ -55,18 +122,18 @@ const HomePage = () => {
   const features = [
     {
       icon: SparklesIcon,
-      title: 'AI-Powered Suggestions',
-      description: 'Get intelligent domain name suggestions powered by advanced AI'
+      title: 'Founder-Curated Selection',
+      description: 'Every domain hand-picked by entrepreneurs who understand what makes a startup name memorable and marketable'
     },
     {
       icon: ShieldCheckIcon,
-      title: 'Secure Transactions',
-      description: 'All transactions protected by escrow and secure payment processing'
+      title: 'Startup-Focused Expertise',
+      description: 'We specialize in AI and tech domains that resonate with investors, customers, and the startup ecosystem'
     },
     {
       icon: TrophyIcon,
-      title: 'Premium Quality',
-      description: 'Curated selection of high-quality domains and websites'
+      title: 'Market-Tested Names',
+      description: 'Domains chosen for their brandability, SEO potential, and ability to scale with growing startups'
     }
   ];
 
@@ -98,33 +165,58 @@ const HomePage = () => {
             }`}>
               <div className="inline-flex items-center px-4 py-2 bg-white/80 backdrop-blur-lg rounded-full text-sm font-medium text-primary-600 mb-6 shadow-lg hover:shadow-xl transition-all duration-300">
                 <SparklesIcon className="w-4 h-4 mr-2" />
-                <span>AI-Powered Domain Marketplace</span>
+                <span>Premium AI Startup Domains—Curated by Founders, For Founders</span>
                 <ArrowRightIcon className="w-4 h-4 ml-2" />
               </div>
               
               <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 text-shadow">
-                Buy & Sell Premium
-                <span className="gradient-text block mt-2">AI Domains & Startup Websites</span>
+                Launch Your AI Startup
+                <span className="gradient-text block mt-2">with the Perfect Domain</span>
               </h1>
               
               <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-4xl mx-auto leading-relaxed">
-                Discover the perfect domain for your AI startup or sell your premium domains to entrepreneurs worldwide. 
-                <span className="font-semibold text-primary-600">Powered by AI, secured by escrow.</span>
+                Hand-picked premium domains for AI founders who understand that the right name can make or break a startup. 
+                <span className="font-semibold text-primary-600">Curated by entrepreneurs, for entrepreneurs.</span>
               </p>
               
-              <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
                 <Link to="/domains" className="btn-primary text-lg px-8 py-4 hover-glow group">
                   <span className="flex items-center justify-center">
                     Browse Domains
                     <ArrowRightIcon className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
                   </span>
                 </Link>
-                <Link to="/seller-dashboard" className="btn-secondary text-lg px-8 py-4 group">
+                <button 
+                  onClick={() => {
+                    // TODO: Implement PDF download
+                    console.log('Downloading Top 25 AI Domains PDF');
+                    alert('Download starting... Check your downloads folder!');
+                  }}
+                  className="btn-secondary text-lg px-8 py-4 group bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 hover:from-green-600 hover:to-emerald-700"
+                >
                   <span className="flex items-center justify-center">
-                    List Your Domain
-                    <SparklesIcon className="w-5 h-5 ml-2 group-hover:rotate-12 transition-transform duration-300" />
+                    📄 Free: Top 25 AI Domains
+                    <ArrowRightIcon className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
                   </span>
-                </Link>
+                </button>
+              </div>
+              
+              {/* Free Domain Scouting Offer */}
+              <div className="bg-white/90 backdrop-blur-lg rounded-2xl p-6 max-w-2xl mx-auto mb-12 shadow-xl border border-white/20">
+                <div className="text-center">
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">🎯 Free Domain Scouting Service</h3>
+                  <p className="text-gray-600 mb-4">Can't find the perfect domain? Our AI experts will scout custom matches for your startup idea.</p>
+                  <button 
+                    onClick={() => {
+                      // TODO: Implement custom domain matching form
+                      console.log('Opening custom domain matching form');
+                      alert('Custom domain matching form coming soon!');
+                    }}
+                    className="btn-primary px-6 py-3 text-base"
+                  >
+                    Get Custom Domain Matches
+                  </button>
+                </div>
               </div>
               
               {/* Animated Stats */}
@@ -164,11 +256,11 @@ const HomePage = () => {
             </div>
             
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 text-shadow">
-              Get 10 Brandable AI Domains Weekly – Free!
+              🚨 Join the VIP Waitlist for Hot Domain Drops
             </h2>
             
             <p className="text-xl text-primary-100 mb-8 max-w-2xl mx-auto">
-              Join thousands of entrepreneurs receiving curated AI domain suggestions every week
+              Get early access to premium AI domains before they hit the public market. VIP members see new listings 24-48 hours early.
             </p>
             
             <form onSubmit={handleEmailSubmit} className="flex flex-col sm:flex-row gap-4 max-w-lg mx-auto">
@@ -183,11 +275,12 @@ const HomePage = () => {
                 />
               </div>
               <button 
-                type="submit" 
-                className="bg-white text-primary-600 font-semibold px-8 py-3 rounded-xl hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl group"
+                type="submit"
+                disabled={subscribing}
+                className="bg-white text-primary-600 font-semibold px-8 py-3 rounded-xl hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl group disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <span className="flex items-center justify-center">
-                  Subscribe
+                  {subscribing ? 'Joining...' : 'Join VIP Waitlist'}
                   <CheckIcon className="w-5 h-5 ml-2 group-hover:scale-110 transition-transform duration-300" />
                 </span>
               </button>
@@ -196,15 +289,15 @@ const HomePage = () => {
             <div className="flex items-center justify-center mt-6 space-x-6 text-primary-100">
               <div className="flex items-center">
                 <CheckIcon className="w-4 h-4 mr-2" />
-                <span className="text-sm">No spam, ever</span>
+                <span className="text-sm">24-48hr early access</span>
               </div>
               <div className="flex items-center">
                 <CheckIcon className="w-4 h-4 mr-2" />
-                <span className="text-sm">Unsubscribe anytime</span>
+                <span className="text-sm">Hot drops alerts</span>
               </div>
               <div className="flex items-center">
                 <CheckIcon className="w-4 h-4 mr-2" />
-                <span className="text-sm">Premium domains</span>
+                <span className="text-sm">Pre-release names</span>
               </div>
             </div>
           </div>
@@ -241,11 +334,11 @@ const HomePage = () => {
                   onChange={(e) => setBusinessIdea(e.target.value)}
                   placeholder="e.g., AI-powered customer service chatbot, sustainable fashion marketplace"
                   className="input-modern text-lg py-4 shadow-lg"
-                  onKeyPress={(e) => e.key === 'Enter' && generateDomains()}
+                  onKeyPress={(e) => e.key === 'Enter' && generateDomainSuggestions()}
                 />
               </div>
               <button
-                onClick={generateDomains}
+                onClick={generateDomainSuggestions}
                 disabled={isGenerating || !businessIdea.trim()}
                 className="btn-primary px-8 py-4 text-lg disabled:opacity-50 disabled:cursor-not-allowed hover-glow group min-w-[160px]"
               >
@@ -375,7 +468,9 @@ const HomePage = () => {
                 
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                   <div className="text-center sm:text-left">
-                    <span className="text-4xl md:text-5xl font-bold text-primary-600 block">{featuredDomain.price}</span>
+                    <span className="text-4xl md:text-5xl font-bold text-primary-600 block">
+                      ${typeof featuredDomain.price === 'number' ? featuredDomain.price.toLocaleString() : featuredDomain.price}
+                    </span>
                     <span className="text-gray-500 text-sm">One-time payment • No hidden fees</span>
                   </div>
                   <div className="flex gap-3">
@@ -434,10 +529,10 @@ const HomePage = () => {
               Why Choose Us
             </div>
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 gradient-text">
-              Premium Domain Marketplace
+              Built by Founders, For Founders
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              We provide the most comprehensive platform for buying and selling premium domains with cutting-edge technology and unmatched security.
+              We understand the startup journey because we've been there. Every domain is hand-picked by entrepreneurs who know what makes a name stick in the market.
             </p>
           </div>
           
@@ -459,6 +554,94 @@ const HomePage = () => {
                 </p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Social Media Content Ideas Section */}
+      <section className="py-20 bg-white relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16 animate-fade-in">
+            <div className="inline-flex items-center bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium mb-4">
+              <SparklesIcon className="w-4 h-4 mr-2" />
+              Build Your Personal Brand
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 gradient-text">
+              Daily Content Ideas for Domain Brokers
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Follow the journey, share the knowledge. Here's how successful domain brokers build their personal brand on social media.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Domain of the Day */}
+            <div className="card-interactive group animate-slide-up">
+              <div className="w-16 h-16 bg-gradient-to-br from-orange-100 to-red-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                <span className="text-2xl">🔥</span>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-primary-600 transition-colors duration-300">
+                "🔥 Domain of the Day"
+              </h3>
+              <p className="text-gray-600 mb-4">
+                Share 1 AI startup name daily with why it's great and niche use cases. Example: "AIHealthHub.com - Perfect for telemedicine startups targeting the $350B healthcare AI market."
+              </p>
+              <div className="text-sm text-primary-600 font-medium">
+                📱 LinkedIn & Twitter • Daily
+              </div>
+            </div>
+            
+            {/* Educational Tips */}
+            <div className="card-interactive group animate-slide-up" style={{ animationDelay: '200ms' }}>
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                <span className="text-2xl">💡</span>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-primary-600 transition-colors duration-300">
+                Educational Tips
+              </h3>
+              <p className="text-gray-600 mb-4">
+                Share insights like "Why short .ai domains sell for 5 figures" or "The psychology behind memorable startup names." Position yourself as the expert.
+              </p>
+              <div className="text-sm text-primary-600 font-medium">
+                📱 LinkedIn & Twitter • 3x/week
+              </div>
+            </div>
+            
+            {/* Personal Journey */}
+            <div className="card-interactive group animate-slide-up" style={{ animationDelay: '400ms' }}>
+              <div className="w-16 h-16 bg-gradient-to-br from-green-100 to-emerald-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                <span className="text-2xl">🚀</span>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-primary-600 transition-colors duration-300">
+                Personal Journey
+              </h3>
+              <p className="text-gray-600 mb-4">
+                Show your learning process: "Day 30 of building my domain brokerage - here's what I learned about AI startup naming trends." People love following builders.
+              </p>
+              <div className="text-sm text-primary-600 font-medium">
+                📱 LinkedIn & Twitter • 2x/week
+              </div>
+            </div>
+          </div>
+          
+          {/* Content Calendar CTA */}
+          <div className="mt-16 text-center">
+            <div className="bg-gradient-to-r from-primary-50 to-blue-50 rounded-3xl p-8 max-w-4xl mx-auto">
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">Ready to Build Your Domain Broker Brand?</h3>
+              <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
+                Join our community of domain entrepreneurs sharing daily insights and building their personal brands in the AI startup space.
+              </p>
+              <button 
+                onClick={() => {
+                  // TODO: Implement content calendar download
+                  console.log('Downloading content calendar');
+                  alert('📅 30-Day Content Calendar downloading... Check your downloads!');
+                }}
+                className="btn-primary px-8 py-4 text-lg hover-glow"
+              >
+                📅 Get Free 30-Day Content Calendar
+              </button>
+            </div>
           </div>
         </div>
       </section>
