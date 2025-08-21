@@ -43,10 +43,8 @@ export interface ApiResponse<T> {
 }
 
 export interface MarketplaceStats {
-  total_domains: number;
-  total_sales: number;
-  average_price: number;
-  active_listings: number;
+  label: string;
+  value: string;
 }
 
 export interface Category {
@@ -177,8 +175,8 @@ class ApiClient {
     return response.domain;
   }
 
-  async getMarketplaceStats(): Promise<MarketplaceStats> {
-    const response = await this.request<{ stats: MarketplaceStats }>('/domains/stats');
+  async getMarketplaceStats(): Promise<MarketplaceStats[]> {
+    const response = await this.request<{ stats: MarketplaceStats[] }>('/domains/stats');
     return response.stats;
   }
 
@@ -273,22 +271,20 @@ class ApiClient {
 // Create and export API client instance
 export const apiClient = new ApiClient();
 
-// Export individual API functions for convenience
-export const {
-  getDomains,
-  getFeaturedDomains,
-  getDomainById,
-  getMarketplaceStats,
-  getCategories,
-  createDomain,
-  subscribeEmail,
-  submitContactForm,
-  registerUser,
-  loginUser,
-  generateDomains,
-  checkDomainAvailability,
-  getTrendingSuggestions,
-} = apiClient;
+// Export individual methods for convenience
+export const getDomains = (filters?: DomainFilters, pagination?: PaginationParams) => apiClient.getDomains(filters, pagination);
+export const getFeaturedDomains = () => apiClient.getFeaturedDomains();
+export const getDomainById = (id: number) => apiClient.getDomainById(id);
+export const getMarketplaceStats = () => apiClient.getMarketplaceStats();
+export const getCategories = () => apiClient.getCategories();
+export const createDomain = (domainData: Partial<Domain>) => apiClient.createDomain(domainData);
+export const subscribeEmail = (subscription: EmailSubscription) => apiClient.subscribeEmail(subscription);
+export const submitContactForm = (contactData: ContactForm) => apiClient.submitContactForm(contactData);
+export const registerUser = (userData: any) => apiClient.registerUser(userData);
+export const loginUser = (credentials: any) => apiClient.loginUser(credentials);
+export const generateDomains = (data: DomainGenerationRequest) => apiClient.generateDomains(data);
+export const checkDomainAvailability = (domains: string[]) => apiClient.checkDomainAvailability(domains);
+export const getTrendingSuggestions = (category?: string, limit?: number) => apiClient.getTrendingSuggestions(category, limit);
 
 // Error handling utility
 export class ApiError extends Error {

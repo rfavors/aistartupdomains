@@ -43,7 +43,7 @@
   }
   
   .gradient-text {
-    @apply bg-gradient-to-r from-primary-600 to-blue-600 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-primary-600 to-primary-500 bg-clip-text text-transparent;
   }
   
   .animate-fade-in {
@@ -104,7 +104,7 @@
   }
   
   .bg-mesh {
-    background-image: radial-gradient(circle at 25px 25px, rgba(59, 130, 246, 0.1) 2%, transparent 0%), radial-gradient(circle at 75px 75px, rgba(147, 51, 234, 0.1) 2%, transparent 0%);
+    background-image: radial-gradient(circle at 25px 25px, rgba(255, 140, 66, 0.1) 2%, transparent 0%), radial-gradient(circle at 75px 75px, rgba(45, 55, 72, 0.1) 2%, transparent 0%);
     background-size: 100px 100px;
   }
 }

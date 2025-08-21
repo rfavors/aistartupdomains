@@ -316,7 +316,7 @@ const WebsitesPage = () => {
               {filteredWebsites.map((website) => (
                 <div key={website.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
                   {website.featured && (
-                    <div className="bg-gradient-to-r from-primary-500 to-blue-600 px-4 py-2">
+                    <div className="bg-gradient-to-r from-primary-500 to-secondary-600 px-4 py-2">
                       <span className="text-white text-sm font-medium">Featured</span>
                     </div>
                   )}
@@ -353,10 +353,10 @@ const WebsitesPage = () => {
                       )}
                       {website.monthlyTraffic && (
                         <div className="flex items-center gap-2">
-                          <ChartBarIcon className="h-4 w-4 text-blue-500" />
+                          <ChartBarIcon className="h-4 w-4 text-primary-500" />
                           <div>
                             <span className="text-xs text-gray-500">Monthly Traffic</span>
-                            <p className="font-semibold text-blue-600">{website.monthlyTraffic}</p>
+                            <p className="font-semibold text-primary-600">{website.monthlyTraffic}</p>
                           </div>
                         </div>
                       )}

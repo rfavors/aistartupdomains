@@ -172,7 +172,7 @@ const AdminDashboard = () => {
         active: { color: 'bg-green-100 text-green-800', icon: CheckCircleIcon },
         pending: { color: 'bg-yellow-100 text-yellow-800', icon: ExclamationTriangleIcon },
         flagged: { color: 'bg-red-100 text-red-800', icon: FlagIcon },
-        sold: { color: 'bg-blue-100 text-blue-800', icon: CurrencyDollarIcon },
+        sold: { color: 'bg-primary-100 text-primary-800', icon: CurrencyDollarIcon },
         rejected: { color: 'bg-gray-100 text-gray-800', icon: XCircleIcon }
       }
     };
@@ -276,8 +276,8 @@ const AdminDashboard = () => {
                     <p className="text-2xl font-bold text-gray-900">{stats.totalUsers.toLocaleString()}</p>
                     <p className="text-sm text-green-600">+12% from last month</p>
                   </div>
-                  <div className="bg-blue-100 p-3 rounded-lg">
-                    <UsersIcon className="h-6 w-6 text-blue-600" />
+                  <div className="bg-primary-100 p-3 rounded-lg">
+                    <UsersIcon className="h-6 w-6 text-primary-600" />
                   </div>
                 </div>
               </div>
@@ -438,7 +438,7 @@ const AdminDashboard = () => {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
                             user.role === 'admin' ? 'bg-red-100 text-red-800' :
-                            user.role === 'seller' ? 'bg-blue-100 text-blue-800' :
+                            user.role === 'seller' ? 'bg-primary-100 text-primary-800' :
                             'bg-gray-100 text-gray-800'
                           }`}>
                             {user.role.charAt(0).toUpperCase() + user.role.slice(1)}

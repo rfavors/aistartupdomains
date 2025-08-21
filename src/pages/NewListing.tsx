@@ -434,7 +434,7 @@ const NewListing = () => {
           {/* Submit */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="flex items-start space-x-3 mb-6">
-              <InformationCircleIcon className="h-5 w-5 text-blue-500 mt-0.5" />
+              <InformationCircleIcon className="h-5 w-5 text-primary-500 mt-0.5" />
               <div className="text-sm text-gray-600">
                 <p className="font-medium text-gray-900 mb-1">Review Process</p>
                 <p>Your listing will be reviewed by our team within 24-48 hours. You'll receive an email notification once it's approved and live on the marketplace.</p>

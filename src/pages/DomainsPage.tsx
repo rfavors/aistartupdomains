@@ -285,7 +285,7 @@ const DomainsPage = () => {
                 {filteredDomains.map((domain) => (
                   <div key={domain.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
                     {domain.is_featured && (
-                      <div className="bg-gradient-to-r from-primary-500 to-blue-600 px-4 py-2">
+                      <div className="bg-gradient-to-r from-primary-500 to-secondary-600 px-4 py-2">
                         <span className="text-white text-sm font-medium">Featured</span>
                       </div>
                     )}

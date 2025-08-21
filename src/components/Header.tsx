@@ -40,12 +40,11 @@ const Header = () => {
           {/* Logo */}
           <div className="flex items-center">
             <Link to="/" className="flex items-center space-x-3 group">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary-600 to-blue-600 rounded-xl flex items-center justify-center transform group-hover:scale-110 transition-all duration-300 shadow-lg group-hover:shadow-xl">
-                <span className="text-white font-bold text-sm">AI</span>
-              </div>
-              <span className="text-xl font-bold text-gray-900 group-hover:text-primary-600 transition-colors duration-300">
-                AI Startup Domains
-              </span>
+              <img 
+                src="/logo.svg" 
+                alt="AI Startup Domains" 
+                className="h-10 w-auto transform group-hover:scale-105 transition-all duration-300"
+              />
             </Link>
           </div>
 

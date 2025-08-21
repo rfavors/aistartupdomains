@@ -116,7 +116,7 @@ const BlogPage = () => {
         {featuredPost && (
           <div className="mb-16">
             <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-              <div className="bg-gradient-to-r from-primary-500 to-blue-600 px-6 py-4">
+              <div className="bg-gradient-to-r from-primary-500 to-secondary-600 px-6 py-4">
                 <span className="text-white font-semibold">Featured Article</span>
               </div>
               

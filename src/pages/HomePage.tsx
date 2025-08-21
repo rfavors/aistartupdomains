@@ -10,7 +10,7 @@ const HomePage = () => {
   const [generatedDomains, setGeneratedDomains] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [featuredDomains, setFeaturedDomains] = useState<Domain[]>([]);
-  const [marketplaceStats, setMarketplaceStats] = useState<MarketplaceStats | null>(null);
+  const [marketplaceStats, setMarketplaceStats] = useState<MarketplaceStats[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [subscribing, setSubscribing] = useState(false);
@@ -106,13 +106,8 @@ const HomePage = () => {
     age: '3 years old'
   };
 
-  // Convert marketplace stats to display format
-  const stats = marketplaceStats ? [
-    { label: 'Domains Sold', value: `${marketplaceStats.total_sales}+` },
-    { label: 'Total Sales', value: `$${Math.round(marketplaceStats.total_sales * marketplaceStats.average_price / 1000000)}M` },
-    { label: 'Active Listings', value: `${marketplaceStats.active_listings}+` },
-    { label: 'Total Domains', value: `${marketplaceStats.total_domains}+` }
-  ] : [
+  // Use marketplace stats directly from API or fallback to mock data
+  const stats = marketplaceStats || [
     { label: 'Domains Sold', value: '2,847' },
     { label: 'Total Sales', value: '$4.2M' },
     { label: 'Active Listings', value: '15,623' },
@@ -151,12 +146,12 @@ const HomePage = () => {
   return (
     <div className="">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-primary-50 via-blue-50 to-purple-50 py-20 lg:py-32 overflow-hidden">
+      <section className="relative bg-gradient-to-br from-primary-50 via-orange-50 to-amber-50 py-20 lg:py-32 overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 bg-mesh opacity-30"></div>
         <div className="absolute top-10 left-10 w-72 h-72 bg-primary-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-bounce-gentle"></div>
-        <div className="absolute top-20 right-10 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-bounce-gentle" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute bottom-10 left-1/2 w-72 h-72 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-bounce-gentle" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute top-20 right-10 w-72 h-72 bg-primary-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-bounce-gentle" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute bottom-10 left-1/2 w-72 h-72 bg-secondary-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-bounce-gentle" style={{ animationDelay: '2s' }}></div>
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
@@ -240,7 +235,7 @@ const HomePage = () => {
       </section>
 
       {/* Email Capture Banner */}
-      <section className="relative bg-gradient-to-r from-primary-600 via-blue-600 to-purple-600 py-16 overflow-hidden">
+      <section className="relative bg-gradient-to-r from-primary-600 via-primary-500 to-secondary-700 py-16 overflow-hidden">
         <div className="absolute inset-0 bg-black/10"></div>
         <div className="absolute top-0 left-0 w-full h-full">
           <div className="absolute top-10 left-10 w-32 h-32 bg-white/10 rounded-full animate-bounce-gentle"></div>
@@ -306,7 +301,7 @@ const HomePage = () => {
 
       {/* AI Domain Generator */}
       <section id="generator" className="py-20 bg-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-blue-50/30"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-primary-50/30"></div>
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 animate-fade-in">
             <div className="inline-flex items-center px-4 py-2 bg-primary-100 rounded-full text-sm font-medium text-primary-700 mb-4">
@@ -401,11 +396,11 @@ const HomePage = () => {
       </section>
 
       {/* Featured Domain */}
-      <section id="featured" className="py-20 bg-gradient-to-br from-gray-50 to-blue-50 relative overflow-hidden">
+      <section id="featured" className="py-20 bg-gradient-to-br from-gray-50 to-primary-50 relative overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 bg-mesh opacity-30"></div>
         <div className="absolute top-10 left-10 w-32 h-32 bg-primary-200 rounded-full blur-3xl opacity-20 animate-bounce-gentle"></div>
-        <div className="absolute bottom-10 right-10 w-40 h-40 bg-blue-200 rounded-full blur-3xl opacity-20 animate-bounce-gentle" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute bottom-10 right-10 w-40 h-40 bg-primary-200 rounded-full blur-3xl opacity-20 animate-bounce-gentle" style={{ animationDelay: '2s' }}></div>
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="text-center mb-16 animate-fade-in">
@@ -423,7 +418,7 @@ const HomePage = () => {
           
           <div className="max-w-4xl mx-auto">
             <div className="card-interactive group hover-glow animate-slide-up">
-              <div className="bg-gradient-to-r from-primary-500 via-purple-500 to-blue-600 px-8 py-6 relative overflow-hidden">
+              <div className="bg-gradient-to-r from-primary-500 via-primary-400 to-secondary-600 px-8 py-6 relative overflow-hidden">
                 <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
                 <div className="flex items-center justify-between relative z-10">
                   <div className="flex items-center">
@@ -462,7 +457,7 @@ const HomePage = () => {
                   </div>
                   <div className="text-center p-4 bg-gray-50 rounded-xl">
                     <span className="text-sm text-gray-500 block mb-1">Backlinks</span>
-                    <p className="font-bold text-xl text-blue-600">2.5K+</p>
+                    <p className="font-bold text-xl text-primary-600">2.5K+</p>
                   </div>
                 </div>
                 
@@ -491,14 +486,14 @@ const HomePage = () => {
       </section>
 
       {/* Stats Section */}
-      <section className="py-20 bg-gradient-to-r from-primary-600 to-blue-700 relative overflow-hidden">
+      <section className="py-20 bg-gradient-to-r from-primary-600 to-secondary-700 relative overflow-hidden">
         <div className="absolute inset-0 bg-black/10"></div>
         <div className="absolute top-0 left-0 w-full h-full bg-mesh opacity-20"></div>
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Trusted by Thousands</h2>
-            <p className="text-blue-100 text-lg">Join the community of successful entrepreneurs</p>
+            <p className="text-primary-100 text-lg">Join the community of successful entrepreneurs</p>
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
             {stats.map((stat, index) => (
@@ -510,7 +505,7 @@ const HomePage = () => {
                 <div className="text-4xl md:text-5xl font-bold text-white mb-2 animate-bounce-gentle">
                   {stat.value}
                 </div>
-                <div className="text-blue-100 font-medium">{stat.label}</div>
+                <div className="text-primary-100 font-medium">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -520,7 +515,7 @@ const HomePage = () => {
       {/* Features Section */}
       <section className="py-20 bg-gradient-to-br from-gray-50 to-white relative">
         <div className="absolute top-20 right-20 w-64 h-64 bg-primary-100 rounded-full blur-3xl opacity-30"></div>
-        <div className="absolute bottom-20 left-20 w-48 h-48 bg-blue-100 rounded-full blur-3xl opacity-30"></div>
+        <div className="absolute bottom-20 left-20 w-48 h-48 bg-primary-100 rounded-full blur-3xl opacity-30"></div>
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="text-center mb-16 animate-fade-in">
@@ -543,7 +538,7 @@ const HomePage = () => {
                 className="card-interactive group text-center animate-slide-up"
                 style={{ animationDelay: `${index * 200}ms` }}
               >
-                <div className="w-20 h-20 bg-gradient-to-br from-primary-100 to-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                <div className="w-20 h-20 bg-gradient-to-br from-primary-100 to-primary-200 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
                   <feature.icon className="h-10 w-10 text-primary-600 group-hover:text-primary-700 transition-colors duration-300" />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-primary-600 transition-colors duration-300">
@@ -562,7 +557,7 @@ const HomePage = () => {
       <section className="py-20 bg-white relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16 animate-fade-in">
-            <div className="inline-flex items-center bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium mb-4">
+            <div className="inline-flex items-center bg-gradient-to-r from-primary-100 to-secondary-100 text-primary-800 px-4 py-2 rounded-full text-sm font-medium mb-4">
               <SparklesIcon className="w-4 h-4 mr-2" />
               Build Your Personal Brand
             </div>
@@ -593,7 +588,7 @@ const HomePage = () => {
             
             {/* Educational Tips */}
             <div className="card-interactive group animate-slide-up" style={{ animationDelay: '200ms' }}>
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+              <div className="w-16 h-16 bg-gradient-to-br from-primary-100 to-secondary-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                 <span className="text-2xl">💡</span>
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-primary-600 transition-colors duration-300">
@@ -626,7 +621,7 @@ const HomePage = () => {
           
           {/* Content Calendar CTA */}
           <div className="mt-16 text-center">
-            <div className="bg-gradient-to-r from-primary-50 to-blue-50 rounded-3xl p-8 max-w-4xl mx-auto">
+            <div className="bg-gradient-to-r from-primary-50 to-secondary-50 rounded-3xl p-8 max-w-4xl mx-auto">
               <h3 className="text-2xl font-bold text-gray-900 mb-4">Ready to Build Your Domain Broker Brand?</h3>
               <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
                 Join our community of domain entrepreneurs sharing daily insights and building their personal brands in the AI startup space.
@@ -647,7 +642,7 @@ const HomePage = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-primary-600 via-purple-600 to-blue-600 relative overflow-hidden">
+      <section className="py-20 bg-gradient-to-r from-primary-600 via-secondary-600 to-primary-700 relative overflow-hidden">
         <div className="absolute inset-0 bg-black/10"></div>
         <div className="absolute top-0 left-0 w-full h-full bg-mesh opacity-20"></div>
         <div className="absolute top-10 left-10 w-40 h-40 bg-white/10 rounded-full blur-3xl animate-bounce-gentle"></div>

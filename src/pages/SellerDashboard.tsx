@@ -108,7 +108,7 @@ const SellerDashboard = () => {
     const statusConfig = {
       active: { color: 'bg-green-100 text-green-800', icon: CheckCircleIcon },
       pending: { color: 'bg-yellow-100 text-yellow-800', icon: ClockIcon },
-      sold: { color: 'bg-blue-100 text-blue-800', icon: CurrencyDollarIcon },
+      sold: { color: 'bg-primary-100 text-primary-800', icon: CurrencyDollarIcon },
       expired: { color: 'bg-red-100 text-red-800', icon: XCircleIcon }
     };
 
@@ -275,8 +275,8 @@ const SellerDashboard = () => {
                     <p className="text-sm font-medium text-gray-600">Total Views</p>
                     <p className="text-2xl font-bold text-gray-900">{stats.totalViews.toLocaleString()}</p>
                   </div>
-                  <div className="bg-blue-100 p-3 rounded-lg">
-                    <EyeIcon className="h-6 w-6 text-blue-600" />
+                  <div className="bg-primary-100 p-3 rounded-lg">
+                    <EyeIcon className="h-6 w-6 text-primary-600" />
                   </div>
                 </div>
               </div>
@@ -315,7 +315,7 @@ const SellerDashboard = () => {
                       <p className="font-medium text-gray-900">New inquiry for AIStartupHub.com</p>
                       <p className="text-sm text-gray-600">5 hours ago</p>
                     </div>
-                    <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+                    <span className="bg-primary-100 text-primary-800 px-2 py-1 rounded-full text-xs font-medium">
                       New Inquiry
                     </span>
                   </div>
